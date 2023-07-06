@@ -55,3 +55,28 @@ True
 {'str1': <class 'str'>, 'str2': <class 'str'>, 'return': <class 'str'>}
 ```
 </Details>
+
+### Task 2. Basic annotations - floor
+<Details>
+Write a type-annotated function floor which takes a float n as argument and returns the floor of the float.
+
+```
+bob@dylan:~$ cat 2-main.py
+#!/usr/bin/env python3
+
+import math
+
+floor = __import__('2-floor').floor
+
+ans = floor(3.14)
+
+print(ans == math.floor(3.14))
+print(floor.__annotations__)
+print("floor(3.14) returns {}, which is a {}".format(ans, type(ans)))
+
+bob@dylan:~$ ./2-main.py
+True
+{'n': <class 'float'>, 'return': <class 'int'>}
+floor(3.14) returns 3, which is a <class 'int'>
+```
+</Details>
