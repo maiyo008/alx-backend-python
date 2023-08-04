@@ -3,7 +3,7 @@
 Test client
 """
 import unittest
-from unittest.mock import patch, PropertyMock
+from unittest.mock import patch, PropertyMock, Mock
 from parameterized import parameterized, parameterized_class
 from client import GithubOrgClient
 from fixtures import TEST_PAYLOAD
@@ -90,17 +90,35 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
     tests for the `GithubOrgClient` class.
     """
     @classmethod
-    def setUpClass(cls):
-        cls.get_patcher = patch('requests.get')
-        cls.mock_get = cls.get_patcher.start()
-        cls.mock_get.side_effect = [
-            cls.org_payload,
-            cls.repos_payload,
-        ]
+    def setUpClass(cls) -> None:
+        route_payload = {
+            'https://api.github.com/orgs/google': cls.org_payload,
+            'https://api.github.com/orgs/google/repos': cls.repos_payload,
+        }
+
+        def get_payload(url):
+            if url in route_payload:
+                return Mock(**{'json.return_value': route_payload[url]})
+            return HTTPError
+
+        cls.get_patcher = patch("requests.get", side_effect=get_payload)
+        cls.get_patcher.start()
 
     @classmethod
     def tearDownClass(cls):
         cls.get_patcher.stop()
+
+    def test_public_repos(self):
+        self.assertEqual(
+            GithubOrgClient("google").public_repos(),
+            self.expected_repos,
+        )
+
+    def test_public_repos_with_license(self):
+        self.assertEqual(
+            GithubOrgClient("google").public_repos(license="apache-2.0"),
+            self.apache2_repos,
+        )
 
 
 if __name__ == "__main__":
