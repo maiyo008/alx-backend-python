@@ -3,7 +3,7 @@
 Test client
 """
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, PropertyMock
 from parameterized import parameterized
 from client import GithubOrgClient
 
@@ -46,7 +46,10 @@ class TestGithubOrgClient(unittest.TestCase):
         self.assertEqual(result, expected_url)
 
     @patch('client.get_json')
-    @patch('client.GithubOrgClient._public_repos_url', new_callable=property)
+    @patch(
+        'client.GithubOrgClient._public_repos_url',
+        new_callable=PropertyMock
+    )
     def test_public_repos(self, mock_repos_url, mock_get_json):
         org_name = "google"
         expected_repos_url = f"https://api.github.com/orgs/{org_name}/repos"
@@ -62,6 +65,15 @@ class TestGithubOrgClient(unittest.TestCase):
         mock_get_json.assert_called_once_with(expected_repos_url)
         expected_repos = ["repo1"]
         self.assertEqual(repos, expected_repos)
+
+    @parameterized.expand([
+        ({"license": {"key": "my_license"}}, "my_license", True),
+        ({"license": {"key": "other_license"}}, "my_license", False),
+    ])
+    def test_has_license(self, repo, license_key, expected_result):
+        client = GithubOrgClient("dummy_org")
+        result = GithubOrgClient.has_license(repo, license_key)
+        self.assertEqual(result, expected_result)
 
 
 if __name__ == "__main__":
