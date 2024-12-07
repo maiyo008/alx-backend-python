@@ -8,7 +8,7 @@ from mysql.connector import Error
 seed = __import__('seed')
 
 
-def stream_users ():
+def stream_users():
     """
     """
     seed.load_dotenv()
