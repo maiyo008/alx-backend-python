@@ -18,7 +18,7 @@ def stream_users_in_batches(batch_size):
     """
     seed.load_dotenv()
     connection = seed.connect_to_prodev()
-    print('Database connected')
+    #print('Database connected')
     if connection:
         try:
             cursor = connection.cursor(dictionary=True)
@@ -53,9 +53,10 @@ def batch_processing(batch_size):
     Yields:
         dict: A user record with age > 25.
     """
-    print(batch_size)
+    users = []
     for batch in stream_users_in_batches(batch_size):
         for user in batch:
             if user['age'] > 25:
-                print(user)
-                yield user
+                users.append(user)
+    return users
+
