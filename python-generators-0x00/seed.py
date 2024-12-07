@@ -1,71 +1,74 @@
 #!/usr/bin/python3
 """
+Secure MySQL connection using environment variables.
 """
+import os
 import mysql.connector
 import uuid
-from mysql.connector import Error
 import csv
+from mysql.connector import Error
+from dotenv import load_dotenv
 
+
+load_dotenv()
 
 def connect_db():
     """
-    A function to connect to mysql database
+    A function to connect to MySQL server
     Returns:
-        connection object if connection is successful else None
+        connection(object): MySQL connection object if successful, else None
     """
     try:
         connection = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="@tengecha4N"
-    )
-        if connection.is_connected():
-            print("mysql server connected successfuly")
+            host=os.getenv("DB_HOST"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD")
+        )
+        # if connection.is_connected():
+        #     print("MySQL server connected successfully")
         return connection
     except Error as e:
-        print('Error in connecting to mysql: {}'.format(e))
+        print(f"Error in connecting to MySQL: {e}")
         return None
 
 def create_database(connection):
     """
-    A function that creates the function ALX_prodev
+    A function to create the ALX_prodev database
     Args:
-        connection(object) - connection object used to connect to mysql server
-    Returns:
-        None
+        connection(object): Connection object to MySQL server
     """
     try:
         mycursor = connection.cursor()
         mycursor.execute("CREATE DATABASE IF NOT EXISTS ALX_prodev")
-        print("Database ALX_prodec created or already exists")
+        # print("Database ALX_prodev created or already exists")
     except Error as e:
-        print('Error in creating database: '.format(e))
+        print(f"Error in creating database: {e}")
 
 def connect_to_prodev():
     """
-    A function that connects to ALX_prodev database
+    A function to connect to the ALX_prodev database
     Returns:
-        connection(obj) - Connection object if connection is a success else None
+        connection(object): MySQL connection object if successful, else None
     """
     try:
         connection = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="@tengecha4N",
-        database="ALX_prodev"
-    )
-        if connection.is_connected():
-            print("Database connected successfuly")
+            host=os.getenv("DB_HOST"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            database=os.getenv("DB_NAME")
+        )
+        # if connection.is_connected():
+        #     print("Database connected successfully")
         return connection
     except Error as e:
-        print('Error in connecting to database: {}'.format(e))
+        print(f"Error in connecting to database: {e}")
         return None
 
 def create_table(connection):
     """
-    A function that creates a table and its required fields
+    A function to create a table and its required fields
     Args:
-        connection(obj): connection object to mysql server and db
+        connection(object): Connection object to MySQL server and database
     """
     try:
         mycursor = connection.cursor()
@@ -78,19 +81,23 @@ def create_table(connection):
                 INDEX (user_id)
             )
         """)
-        print('user_table created or exists')
+        # print("Table 'user_data' created or already exists")
     except Error as e:
-        print('Error in creating table: {}'.format(e))
+        print(f"Error in creating table: {e}")
 
 def insert_data(connection, csv_file):
     """
+    Inserts data from a CSV file into the database.
+    Args:
+        connection(object): Connection object to the database
+        csv_file(str): Path to the CSV file
     """
     try:
         mycursor = connection.cursor()
         insert_query = """
            INSERT INTO user_data (user_id, name, email, age)
-            VALUES (%s, %s, %s, %s)
-            ON DUPLICATE KEY UPDATE name=name 
+           VALUES (%s, %s, %s, %s)
+           ON DUPLICATE KEY UPDATE name=name
         """
         with open(csv_file, 'r') as file:
             csv_reader = csv.DictReader(file)
@@ -99,7 +106,7 @@ def insert_data(connection, csv_file):
                 user_id = str(uuid.uuid4())
                 mycursor.execute(insert_query, (user_id, row['name'], row['email'], row['age']))
         connection.commit()
-        print('Data inserted successfully')
+        # print("Data inserted successfully")
     except Error as e:
-        print('Error in inserting data: {}'.format(e))
+        print(f"Error in inserting data: {e}")
 
